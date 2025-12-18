@@ -1,20 +1,19 @@
 import { Moon, Sun } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useMenuTheme } from "@/contexts/ThemeContext";
 
 interface ThemeToggleProps {
   size?: "sm" | "md" | "lg";
-  showLabel?: boolean;
 }
 
-export function ThemeToggle({ size = "md", showLabel = false }: ThemeToggleProps) {
+export function ThemeToggle({ size = "md" }: ThemeToggleProps) {
   const { appMode, toggleAppMode } = useMenuTheme();
   const isDark = appMode === "dark";
 
   const sizeClasses = {
-    sm: "h-8 w-14",
-    md: "h-10 w-[72px]",
-    lg: "h-12 w-20",
+    sm: "h-7 w-7",
+    md: "h-9 w-9",
+    lg: "h-11 w-11",
   };
 
   const iconSizes = {
@@ -23,36 +22,36 @@ export function ThemeToggle({ size = "md", showLabel = false }: ThemeToggleProps
     lg: "h-5 w-5",
   };
 
-  const knobSizes = {
-    sm: "h-6 w-6",
-    md: "h-8 w-8",
-    lg: "h-10 w-10",
-  };
-
   return (
-    <div className="flex items-center gap-3">
-      {showLabel && (
-        <span className="text-sm font-medium text-muted-foreground">
-          {isDark ? "Dark" : "Light"}
-        </span>
-      )}
-      <button
-        onClick={toggleAppMode}
-        className={`relative ${sizeClasses[size]} rounded-full bg-muted p-1 transition-colors duration-300`}
-        aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
-      >
-        <motion.div
-          className={`${knobSizes[size]} flex items-center justify-center rounded-full bg-background shadow-md`}
-          animate={{ x: isDark ? (size === "sm" ? 22 : size === "md" ? 30 : 28) : 0 }}
-          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        >
-          {isDark ? (
+    <motion.button
+      onClick={toggleAppMode}
+      className={`${sizeClasses[size]} relative flex items-center justify-center rounded-xl bg-muted/60 backdrop-blur-sm border border-border/50 hover:bg-muted transition-colors`}
+      whileTap={{ scale: 0.9 }}
+      aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        {isDark ? (
+          <motion.div
+            key="moon"
+            initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
+            animate={{ rotate: 0, opacity: 1, scale: 1 }}
+            exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
+            transition={{ duration: 0.2 }}
+          >
             <Moon className={`${iconSizes[size]} text-primary`} />
-          ) : (
-            <Sun className={`${iconSizes[size]} text-warning`} />
-          )}
-        </motion.div>
-      </button>
-    </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="sun"
+            initial={{ rotate: 90, opacity: 0, scale: 0.5 }}
+            animate={{ rotate: 0, opacity: 1, scale: 1 }}
+            exit={{ rotate: -90, opacity: 0, scale: 0.5 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Sun className={`${iconSizes[size]} text-amber-500`} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.button>
   );
 }
