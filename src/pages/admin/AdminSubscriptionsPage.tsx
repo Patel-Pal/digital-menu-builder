@@ -20,7 +20,7 @@ export function AdminSubscriptionsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-1 xs:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Monthly Revenue" value="$3,456" change="+12%" changeType="positive" icon={<DollarSign className="h-5 w-5" />} />
         <StatCard title="Active Subs" value="134" change="+8" changeType="positive" icon={<Users className="h-5 w-5" />} />
         <StatCard title="Premium Plans" value="67" change="+5" changeType="positive" icon={<CreditCard className="h-5 w-5" />} />
@@ -31,8 +31,8 @@ export function AdminSubscriptionsPage() {
       <Card variant="elevated">
         <CardHeader><CardTitle>Plan Distribution</CardTitle></CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 space-y-2">
+          <div className="space-y-4">
+            <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Premium</span>
                 <span className="font-medium">67 shops (43%)</span>
@@ -41,7 +41,7 @@ export function AdminSubscriptionsPage() {
                 <div className="h-full w-[43%] rounded-full bg-primary" />
               </div>
             </div>
-            <div className="flex-1 space-y-2">
+            <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Basic</span>
                 <span className="font-medium">54 shops (35%)</span>
@@ -50,7 +50,7 @@ export function AdminSubscriptionsPage() {
                 <div className="h-full w-[35%] rounded-full bg-accent" />
               </div>
             </div>
-            <div className="flex-1 space-y-2">
+            <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Free</span>
                 <span className="font-medium">35 shops (22%)</span>
