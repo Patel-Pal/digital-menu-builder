@@ -36,6 +36,30 @@ export const shopService = {
   createOrUpdateShopProfile: async (data: ShopProfileData) => {
     const response = await api.post('/shops/profile', data);
     return response.data;
+  },
+
+  // Get shop by owner ID
+  getShopByOwnerId: async (ownerId: string) => {
+    const response = await api.get(`/shops/${ownerId}`);
+    return response.data;
+  },
+
+  // Get shop analytics
+  getShopAnalytics: async () => {
+    const response = await api.get('/shops/analytics');
+    return response.data;
+  },
+
+  // Increment scan count
+  incrementScan: async (ownerId: string) => {
+    const response = await api.post(`/shops/${ownerId}/scan`);
+    return response.data;
+  },
+
+  // Increment view count
+  incrementView: async (ownerId: string) => {
+    const response = await api.post(`/shops/${ownerId}/view`);
+    return response.data;
   }
 };
 

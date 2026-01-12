@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Search, Globe, ChevronDown, UtensilsCrossed, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -10,12 +11,15 @@ import { AboutShop } from "@/components/AboutShop";
 import { CustomerRating } from "@/components/CustomerRating";
 import { menuItemService, type MenuItem } from "@/services/menuItemService";
 import { categoryService, type Category } from "@/services/categoryService";
+import { shopService, type Shop } from "@/services/shopService";
 import { useMenuTheme, menuThemes } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 
 type ViewTab = "menu" | "about";
 
 export function CustomerMenuPage() {
+  const { shopId } = useParams<{ shopId: string }>();
+  const [shop, setShop] = useState<Shop | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("all");
@@ -30,7 +34,7 @@ export function CustomerMenuPage() {
   const { user } = useAuth();
   
   // For demo, use current user's shopId or a default
-  const shopId = user?.shopId || "507f1f77bcf86cd799439011";
+  const currentShopId = shopId || user?.shopId || "";
 
   useEffect(() => {
     fetchData();
@@ -39,13 +43,22 @@ export function CustomerMenuPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [menuResponse, categoryResponse] = await Promise.all([
-        menuItemService.getMenuItemsByShop(shopId),
-        categoryService.getCategoriesByShop(shopId)
+      const [shopResponse, menuResponse, categoryResponse] = await Promise.all([
+        shopService.getShopByOwnerId(currentShopId),
+        menuItemService.getMenuItemsByShop(currentShopId),
+        categoryService.getCategoriesByShop(currentShopId)
       ]);
       
+      setShop(shopResponse.data || null);
       setMenuItems(menuResponse.data || []);
       setCategories(categoryResponse.data || []);
+      
+      // Increment view count when menu is loaded
+      if (currentShopId) {
+        shopService.incrementView(currentShopId).catch(err => 
+          console.error('Failed to increment view count:', err)
+        );
+      }
       
       // Set first category as active if available
       if (categoryResponse.data && categoryResponse.data.length > 0) {
@@ -97,8 +110,8 @@ export function CustomerMenuPage() {
                 🍽️
               </div>
               <div className="flex-1">
-                <h1 className="text-xl font-bold">Digital Menu Demo</h1>
-                <p className="text-muted-foreground text-sm">Delicious food, great experience</p>
+                <h1 className="text-xl font-bold">{shop?.name || "Digital Menu Demo"}</h1>
+                <p className="text-muted-foreground text-sm">{shop?.description || "Delicious food, great experience"}</p>
                 <div className="flex items-center gap-4 mt-2">
                   <span className="text-xs text-muted-foreground">⭐ 4.8 (120 reviews)</span>
                   <span className="text-xs text-muted-foreground">🕒 30-45 min</span>
@@ -245,7 +258,7 @@ export function CustomerMenuPage() {
         </div>
       ) : (
         <div className="px-4 py-6 space-y-6">
-          <AboutShop />
+          <AboutShop shop={shop} themeColor={theme.primary} />
           <AboutDigitalMenu />
           <CustomerRating />
         </div>

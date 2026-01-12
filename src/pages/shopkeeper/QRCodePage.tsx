@@ -3,8 +3,92 @@ import { Download, Share2, RefreshCcw, Eye, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/StatCard";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useRef, useState } from "react";
+import { shopService } from "@/services/shopService";
+import QRCode from "qrcode";
 
 export function QRCodePage() {
+  const { user } = useAuth();
+  const qrRef = useRef<HTMLCanvasElement>(null);
+  const [ownerId, setOwnerId] = useState<string>("");
+  const [analytics, setAnalytics] = useState({
+    totalScans: 0,
+    menuViews: 0,
+    scansChange: "+0% this week",
+    viewsChange: "+0% this week"
+  });
+  
+  // Generate menu URL using ownerId from shops table
+  const menuUrl = ownerId ? `${window.location.origin}/menu/${ownerId}` : "";
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [shopResponse, analyticsResponse] = await Promise.all([
+          shopService.getShopProfile(),
+          shopService.getShopAnalytics()
+        ]);
+        setOwnerId(shopResponse.data?.ownerId || "");
+        setAnalytics(analyticsResponse.data || analytics);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      }
+    };
+    
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
+
+  const handleShare = async () => {
+    if (navigator.share && menuUrl) {
+      try {
+        await navigator.share({
+          title: 'Digital Menu',
+          text: 'Check out our digital menu!',
+          url: menuUrl,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+        copyToClipboard();
+      }
+    } else {
+      copyToClipboard();
+    }
+  };
+
+  const copyToClipboard = () => {
+    if (menuUrl) {
+      navigator.clipboard.writeText(menuUrl).then(() => {
+        alert('Menu link copied to clipboard!');
+      }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = menuUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('Menu link copied to clipboard!');
+      });
+    }
+  };
+  
+  useEffect(() => {
+    if (qrRef.current && ownerId) {
+      // Generate QR code
+      QRCode.toCanvas(qrRef.current, menuUrl, {
+        width: 224,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#ffffff'
+        }
+      }).catch(err => console.error('QR Code generation failed:', err));
+    }
+  }, [menuUrl, ownerId]);
+
   return (
     <div className="space-y-6 p-4">
       {/* QR Code Display */}
@@ -15,32 +99,16 @@ export function QRCodePage() {
       >
         <Card variant="elevated" className="overflow-hidden">
           <CardContent className="p-6 flex flex-col items-center">
-            {/* QR Code Placeholder */}
+            {/* QR Code */}
             <div className="relative">
-              <div className="h-56 w-56 rounded-2xl bg-foreground p-4 flex items-center justify-center">
-                <div className="h-full w-full bg-background rounded-xl grid grid-cols-5 gap-1 p-3">
-                  {Array.from({ length: 25 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={`rounded-sm ${
-                        Math.random() > 0.3 ? "bg-foreground" : "bg-background"
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="h-12 w-12 rounded-lg bg-card shadow-md flex items-center justify-center text-xl font-bold text-primary">
-                  RK
-                </div>
-              </div>
+              <canvas ref={qrRef} className="h-56 w-56 rounded-2xl bg-white"></canvas>
             </div>
 
             <p className="mt-4 text-sm text-muted-foreground text-center">
               Scan to view menu
             </p>
-            <p className="text-xs text-muted-foreground">
-              https://menu.digital/rustic-kitchen
+            <p className="text-xs text-muted-foreground break-all text-center max-w-xs">
+              {menuUrl}
             </p>
           </CardContent>
         </Card>
@@ -57,7 +125,7 @@ export function QRCodePage() {
           <Download className="h-5 w-5 mr-2" />
           Download
         </Button>
-        <Button variant="outline" size="lg" className="h-14">
+        <Button variant="outline" size="lg" className="h-14" onClick={handleShare}>
           <Share2 className="h-5 w-5 mr-2" />
           Share
         </Button>
@@ -72,15 +140,15 @@ export function QRCodePage() {
       >
         <StatCard
           title="Total Scans"
-          value="1,234"
-          change="+12% this week"
+          value={analytics.totalScans.toLocaleString()}
+          change={analytics.scansChange}
           changeType="positive"
           icon={<Smartphone className="h-5 w-5" />}
         />
         <StatCard
           title="Menu Views"
-          value="3,456"
-          change="+8% this week"
+          value={analytics.menuViews.toLocaleString()}
+          change={analytics.viewsChange}
           changeType="positive"
           icon={<Eye className="h-5 w-5" />}
         />
