@@ -6,38 +6,30 @@ import { StatCard } from "@/components/StatCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useRef, useState } from "react";
 import { shopService } from "@/services/shopService";
+import { useAnalytics } from "@/contexts/AnalyticsContext";
 import QRCode from "qrcode";
 
 export function QRCodePage() {
   const { user } = useAuth();
+  const { analytics } = useAnalytics();
   const qrRef = useRef<HTMLCanvasElement>(null);
   const [ownerId, setOwnerId] = useState<string>("");
-  const [analytics, setAnalytics] = useState({
-    totalScans: 0,
-    menuViews: 0,
-    scansChange: "+0% this week",
-    viewsChange: "+0% this week"
-  });
   
   // Generate menu URL using ownerId from shops table
   const menuUrl = ownerId ? `${window.location.origin}/menu/${ownerId}` : "";
   
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchShopData = async () => {
       try {
-        const [shopResponse, analyticsResponse] = await Promise.all([
-          shopService.getShopProfile(),
-          shopService.getShopAnalytics()
-        ]);
-        setOwnerId(shopResponse.data?.ownerId || "");
-        setAnalytics(analyticsResponse.data || analytics);
+        const response = await shopService.getShopProfile();
+        setOwnerId(response.data?.ownerId || "");
       } catch (error) {
-        console.error("Failed to fetch data:", error);
+        console.error("Failed to fetch shop data:", error);
       }
     };
     
     if (user) {
-      fetchData();
+      fetchShopData();
     }
   }, [user]);
 

@@ -302,54 +302,89 @@ export function ShopSettingsPage() {
                 </Button>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-muted/30 rounded-lg border">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-muted-foreground">Phone</Label>
-                  <div className="flex items-center gap-3">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{profileData.phone || "Not set"}</span>
-                  </div>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 bg-muted/30 rounded-lg border">
+  
+  {/* LEFT SIDE – INFO */}
+  <div className="md:col-span-2 space-y-6">
+    
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="space-y-2">
+        <Label className="text-sm font-medium text-muted-foreground">Phone</Label>
+        <div className="flex items-center gap-3">
+          <Phone className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium">{profileData.phone || "Not set"}</span>
+        </div>
+      </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-muted-foreground">Address</Label>
-                  <div className="flex items-center gap-3">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{profileData.address || "Not set"}</span>
-                  </div>
-                </div>
+      <div className="space-y-2">
+        <Label className="text-sm font-medium text-muted-foreground">Address</Label>
+        <div className="flex items-center gap-3">
+          <MapPin className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium">{profileData.address || "Not set"}</span>
+        </div>
+      </div>
+    </div>
 
-                <div className="md:col-span-2 space-y-2">
-                  <Label className="text-sm font-medium text-muted-foreground">Description</Label>
-                  <p className="font-medium text-sm leading-relaxed">
-                    {profileData.description || "No description provided"}
-                  </p>
-                </div>
+    {/* DESCRIPTION */}
+    <div className="space-y-2 rounded-lg border bg-background p-4">
+      <Label className="text-sm font-medium text-muted-foreground">
+        Description
+      </Label>
+      <p className="text-sm leading-relaxed text-foreground whitespace-pre-line">
+        {profileData.description || (
+          <span className="italic text-muted-foreground">
+            No description provided
+          </span>
+        )}
+      </p>
+    </div>
+  </div>
 
-                {(logoPreview || bannerPreview) && (
-                  <div className="md:col-span-2 space-y-3">
-                    <Label className="text-sm font-medium text-muted-foreground">Shop Images</Label>
-                    <div className="flex gap-6">
-                      {logoPreview && (
-                        <div className="space-y-2">
-                          <p className="text-xs font-medium text-muted-foreground">Logo</p>
-                          <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-border shadow-sm">
-                            <img src={logoPreview} alt="Shop Logo" className="w-full h-full object-cover" />
-                          </div>
-                        </div>
-                      )}
-                      {bannerPreview && (
-                        <div className="space-y-2">
-                          <p className="text-xs font-medium text-muted-foreground">Banner</p>
-                          <div className="w-32 h-16 rounded-lg overflow-hidden border-2 border-border shadow-sm">
-                            <img src={bannerPreview} alt="Shop Banner" className="w-full h-full object-cover" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
+  {/* RIGHT SIDE – IMAGES */}
+  <div className="space-y-4">
+    <Label className="text-sm font-medium text-muted-foreground">
+      Shop Images
+    </Label>
+
+    {/* LOGO */}
+    <div className="space-y-2">
+      <p className="text-xs font-medium text-muted-foreground">Logo</p>
+      <div className="w-28 h-28 rounded-xl overflow-hidden border bg-background shadow-sm">
+        {logoPreview ? (
+          <img
+            src={logoPreview}
+            alt="Shop Logo"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
+            No logo
+          </div>
+        )}
+      </div>
+    </div>
+
+    {/* BANNER */}
+    <div className="space-y-2">
+      <p className="text-xs font-medium text-muted-foreground">Banner</p>
+      <div className="w-full h-20 rounded-xl overflow-hidden border bg-background shadow-sm">
+        {bannerPreview ? (
+          <img
+            src={bannerPreview}
+            alt="Shop Banner"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
+            No banner
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+
+</div>
+
             </div>
           </CardContent>
         </Card>

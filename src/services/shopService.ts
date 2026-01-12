@@ -48,7 +48,7 @@ export const shopService = {
 
   // Get shop analytics
   getShopAnalytics: async () => {
-    const response = await api.get('/shops/analytics');
+    const response = await api.get(`/shops/analytics?t=${Date.now()}`);
     return response.data;
   },
 

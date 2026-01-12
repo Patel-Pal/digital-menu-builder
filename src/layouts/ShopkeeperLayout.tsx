@@ -2,8 +2,10 @@ import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LayoutDashboard, UtensilsCrossed, FolderOpen, QrCode, BarChart3, Settings, Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { shopService, type Shop } from "@/services/shopService";
+import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
 import type { NavItem } from "@/types";
 
 const navItems: NavItem[] = [
@@ -19,7 +21,23 @@ export function ShopkeeperLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [shop, setShop] = useState<Shop | null>(null);
   const { logout, user } = useAuth();
+
+  useEffect(() => {
+    const fetchShop = async () => {
+      try {
+        const response = await shopService.getShopProfile();
+        setShop(response.data);
+      } catch (error) {
+        console.error("Failed to fetch shop:", error);
+      }
+    };
+    
+    if (user) {
+      fetchShop();
+    }
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -46,18 +64,23 @@ export function ShopkeeperLayout() {
   };
 
   return (
-    <div className="flex h-screen bg-background">
+    <AnalyticsProvider>
+      <div className="flex h-screen bg-background">
       {/* Sidebar */}
       <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between p-6 border-b">
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
-                DM
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold overflow-hidden">
+                {shop?.logo ? (
+                  <img src={shop.logo} alt={shop.name} className="w-full h-full object-cover" />
+                ) : (
+                  shop?.name?.charAt(0).toUpperCase() || "D"
+                )}
               </div>
               <div>
-                <h1 className="font-semibold">Digital Menu</h1>
+                <h1 className="font-semibold">{shop?.name || "Digital Menu"}</h1>
                 <p className="text-xs text-muted-foreground">Restaurant</p>
               </div>
             </div>
@@ -154,5 +177,6 @@ export function ShopkeeperLayout() {
         </main>
       </div>
     </div>
+    </AnalyticsProvider>
   );
 }
