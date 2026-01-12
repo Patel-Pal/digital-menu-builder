@@ -15,6 +15,7 @@ interface Shop {
   qrScans: number;
   createdAt: string;
   updatedAt: string;
+  menuTheme: string;
 }
 
 interface ShopProfileData {
@@ -23,6 +24,7 @@ interface ShopProfileData {
   banner?: string;
   address?: string;
   phone?: string;
+  menuTheme?: string;
 }
 
 export const shopService = {

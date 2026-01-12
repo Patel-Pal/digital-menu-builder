@@ -67,6 +67,11 @@ export function ShopSettingsPage() {
         });
         setLogoPreview(response.data.logo || "");
         setBannerPreview(response.data.banner || "");
+        
+        // Set theme from database
+        if (response.data.menuTheme) {
+          setMenuTheme(response.data.menuTheme as MenuTheme);
+        }
       }
     } catch (error: any) {
       // If shop doesn't exist (404), that's okay - user can create one
@@ -159,7 +164,21 @@ export function ShopSettingsPage() {
 
   const handleThemeChange = (theme: MenuTheme) => {
     setMenuTheme(theme);
-    toast.success(`Theme changed to ${menuThemes[theme].name}`);
+    // Apply theme immediately
+    setMenuTheme(theme);
+    
+    // Save theme to database in background
+    const data: ShopProfileData = {
+      ...profileData,
+      menuTheme: theme
+    };
+    
+    shopService.createOrUpdateShopProfile(data).then(() => {
+      toast.success(`Theme changed to ${menuThemes[theme].name}`);
+    }).catch((error: any) => {
+      toast.error("Failed to save theme preference");
+      console.error("Theme save error:", error);
+    });
   };
 
   const openEditProfile = () => {

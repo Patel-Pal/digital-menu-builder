@@ -19,8 +19,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 15%;
 
-    /* Coral/Orange primary - appetizing, warm */
-    --primary: 16 85% 58%;
+    /* Dynamic theme colors - updated by JavaScript */
+    --primary: var(--menu-primary, 16 85% 58%);
     --primary-foreground: 0 0% 100%;
 
     /* Soft sage secondary */
@@ -30,8 +30,8 @@
     --muted: 30 20% 95%;
     --muted-foreground: 220 10% 50%;
 
-    /* Warm accent */
-    --accent: 38 95% 60%;
+    /* Dynamic accent - updated by JavaScript */
+    --accent: var(--menu-accent, 38 95% 60%);
     --accent-foreground: 30 50% 15%;
 
     --destructive: 0 72% 55%;
@@ -39,7 +39,7 @@
 
     --border: 30 15% 90%;
     --input: 30 15% 90%;
-    --ring: 16 85% 58%;
+    --ring: var(--menu-primary, 16 85% 58%);
 
     --radius: 1rem;
 
@@ -51,28 +51,28 @@
     --info: 200 80% 55%;
     --info-foreground: 0 0% 100%;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(16 85% 58%) 0%, hsl(30 90% 55%) 100%);
+    /* Dynamic gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--menu-primary, 16 85% 58%)) 0%, hsl(var(--menu-accent, 38 95% 60%)) 100%);
     --gradient-hero: linear-gradient(180deg, hsl(30 50% 98%) 0%, hsl(30 30% 95%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(30 20% 98%) 100%);
-    --gradient-warm: linear-gradient(135deg, hsl(16 85% 58%) 0%, hsl(38 95% 60%) 100%);
+    --gradient-warm: linear-gradient(135deg, hsl(var(--menu-primary, 16 85% 58%)) 0%, hsl(var(--menu-accent, 38 95% 60%)) 100%);
 
     /* Shadows */
     --shadow-sm: 0 1px 2px hsl(220 20% 15% / 0.04);
     --shadow-md: 0 4px 12px hsl(220 20% 15% / 0.08);
     --shadow-lg: 0 8px 24px hsl(220 20% 15% / 0.12);
     --shadow-xl: 0 16px 48px hsl(220 20% 15% / 0.16);
-    --shadow-glow: 0 4px 24px hsl(16 85% 58% / 0.25);
+    --shadow-glow: 0 4px 24px hsl(var(--menu-primary, 16 85% 58%) / 0.25);
 
     /* Sidebar tokens */
     --sidebar-background: 220 20% 12%;
     --sidebar-foreground: 220 10% 85%;
-    --sidebar-primary: 16 85% 58%;
+    --sidebar-primary: var(--menu-primary, 16 85% 58%);
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 15% 18%;
     --sidebar-accent-foreground: 220 10% 95%;
     --sidebar-border: 220 15% 20%;
-    --sidebar-ring: 16 85% 58%;
+    --sidebar-ring: var(--menu-primary, 16 85% 58%);
   }
 
   .dark {
@@ -85,7 +85,7 @@
     --popover: 220 18% 12%;
     --popover-foreground: 30 20% 95%;
 
-    --primary: 16 85% 58%;
+    --primary: var(--menu-primary, 16 85% 58%);
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 15% 18%;
@@ -94,7 +94,7 @@
     --muted: 220 15% 18%;
     --muted-foreground: 220 10% 60%;
 
-    --accent: 38 95% 55%;
+    --accent: var(--menu-accent, 38 95% 55%);
     --accent-foreground: 30 50% 10%;
 
     --destructive: 0 62% 45%;
@@ -102,7 +102,7 @@
 
     --border: 220 15% 20%;
     --input: 220 15% 20%;
-    --ring: 16 85% 58%;
+    --ring: var(--menu-primary, 16 85% 58%);
 
     --sidebar-background: 220 25% 6%;
     --sidebar-foreground: 220 10% 85%;

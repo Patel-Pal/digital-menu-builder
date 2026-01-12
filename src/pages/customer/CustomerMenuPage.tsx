@@ -12,7 +12,7 @@ import { CustomerRating } from "@/components/CustomerRating";
 import { menuItemService, type MenuItem } from "@/services/menuItemService";
 import { categoryService, type Category } from "@/services/categoryService";
 import { shopService, type Shop } from "@/services/shopService";
-import { useMenuTheme, menuThemes } from "@/contexts/ThemeContext";
+import { useMenuTheme, menuThemes, MenuTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 
 type ViewTab = "menu" | "about";
@@ -29,7 +29,7 @@ export function CustomerMenuPage() {
   const [activeTab, setActiveTab] = useState<ViewTab>("menu");
   const [loading, setLoading] = useState(true);
   
-  const { menuTheme } = useMenuTheme();
+  const { menuTheme, setMenuTheme } = useMenuTheme();
   const theme = menuThemes[menuTheme];
   const { user } = useAuth();
   
@@ -52,6 +52,11 @@ export function CustomerMenuPage() {
       setShop(shopResponse.data || null);
       setMenuItems(menuResponse.data || []);
       setCategories(categoryResponse.data || []);
+      
+      // Set shop's theme if available
+      if (shopResponse.data?.menuTheme) {
+        setMenuTheme(shopResponse.data.menuTheme as MenuTheme);
+      }
       
       // Increment view count when menu is loaded
       if (currentShopId) {
