@@ -16,6 +16,8 @@ interface Shop {
   createdAt: string;
   updatedAt: string;
   menuTheme: string;
+  rating?: number;
+  reviewCount?: number;
 }
 
 interface ShopProfileData {
@@ -61,6 +63,12 @@ export const shopService = {
   // Increment view count
   incrementView: async (ownerId: string) => {
     const response = await api.post(`/shops/${ownerId}/view`);
+    return response.data;
+  },
+
+  // Get detailed shop analytics
+  getDetailedAnalytics: async () => {
+    const response = await api.get(`/shops/analytics/detailed?t=${Date.now()}`);
     return response.data;
   }
 };

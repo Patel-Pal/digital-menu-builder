@@ -152,7 +152,7 @@ export function ShopkeeperDashboard() {
                   </div>
                   <div className="flex items-center gap-1 text-warning">
                     <Star className="h-4 w-4 fill-current" />
-                    <span className="text-sm font-medium">4.8</span>
+                    <span className="text-sm font-medium">{item.rating || "4.8"}</span>
                   </div>
                 </div>
               ))

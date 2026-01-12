@@ -1,10 +1,75 @@
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/StatCard";
-import { mockAnalytics } from "@/utils/mockData";
 import { Eye, QrCode, TrendingUp, Users } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { shopService } from "@/services/shopService";
+
+interface AnalyticsData {
+  totalScans: number;
+  menuViews: number;
+  scansChange: string;
+  viewsChange: string;
+  uniqueVisitors: number;
+  avgTime: string;
+  weeklyData: Array<{
+    date: string;
+    scans: number;
+    views: number;
+  }>;
+  topItems: Array<{
+    name: string;
+    views: number;
+    percentage: number;
+  }>;
+  deviceBreakdown: {
+    mobile: number;
+    tablet: number;
+    desktop: number;
+  };
+}
 
 export function ShopkeeperAnalyticsPage() {
+  const { user } = useAuth();
+  const [analytics, setAnalytics] = useState<AnalyticsData>({
+    totalScans: 0,
+    menuViews: 0,
+    scansChange: "+0%",
+    viewsChange: "+0%",
+    uniqueVisitors: 0,
+    avgTime: "0m 0s",
+    weeklyData: [],
+    topItems: [],
+    deviceBreakdown: { mobile: 0, tablet: 0, desktop: 0 }
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const response = await shopService.getDetailedAnalytics();
+        setAnalytics(response.data);
+      } catch (error) {
+        console.error("Failed to fetch analytics:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchAnalytics();
+    }
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 p-4">
       {/* Stats Grid */}
@@ -15,35 +80,35 @@ export function ShopkeeperAnalyticsPage() {
       >
         <StatCard
           title="Total Scans"
-          value="1,234"
-          change="+12%"
+          value={analytics.totalScans.toLocaleString()}
+          change={analytics.scansChange}
           changeType="positive"
           icon={<QrCode className="h-5 w-5" />}
         />
         <StatCard
           title="Menu Views"
-          value="3,456"
-          change="+8%"
+          value={analytics.menuViews.toLocaleString()}
+          change={analytics.viewsChange}
           changeType="positive"
           icon={<Eye className="h-5 w-5" />}
         />
         <StatCard
           title="Unique Visitors"
-          value="987"
+          value={analytics.uniqueVisitors.toLocaleString()}
           change="+15%"
           changeType="positive"
           icon={<Users className="h-5 w-5" />}
         />
         <StatCard
           title="Avg. Time"
-          value="2m 34s"
+          value={analytics.avgTime}
           change="+5%"
           changeType="positive"
           icon={<TrendingUp className="h-5 w-5" />}
         />
       </motion.div>
 
-      {/* Chart Placeholder */}
+      {/* Chart */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -55,26 +120,35 @@ export function ShopkeeperAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-end gap-3 h-40">
-              {mockAnalytics.map((data, index) => (
-                <div
-                  key={data.date}
-                  className="flex-1 flex flex-col items-center gap-2"
-                >
-                  <div className="w-full space-y-1">
-                    <div
-                      className="w-full rounded-t-md bg-primary"
-                      style={{ height: `${(data.scans / 150) * 100}px` }}
-                    />
-                    <div
-                      className="w-full rounded-t-md bg-accent/50"
-                      style={{ height: `${(data.views / 400) * 50}px` }}
-                    />
+              {analytics.weeklyData.map((data, index) => {
+                const maxScans = Math.max(...analytics.weeklyData.map(d => d.scans));
+                const maxViews = Math.max(...analytics.weeklyData.map(d => d.views));
+                
+                return (
+                  <div
+                    key={data.date}
+                    className="flex-1 flex flex-col items-center gap-2"
+                  >
+                    <div className="w-full space-y-1">
+                      <div
+                        className="w-full rounded-t-md bg-primary transition-all duration-500"
+                        style={{ 
+                          height: `${Math.max((data.scans / maxScans) * 120, 8)}px` 
+                        }}
+                      />
+                      <div
+                        className="w-full rounded-t-md bg-accent/50 transition-all duration-500"
+                        style={{ 
+                          height: `${Math.max((data.views / maxViews) * 60, 4)}px` 
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index]}
+                    </span>
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index]}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
             <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-border">
               <div className="flex items-center gap-2">
@@ -101,33 +175,34 @@ export function ShopkeeperAnalyticsPage() {
             <CardTitle className="text-base">Most Viewed Items</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {[
-              { name: "Butter Chicken", views: 234, percentage: 100 },
-              { name: "Margherita Pizza", views: 198, percentage: 85 },
-              { name: "Classic Cheeseburger", views: 156, percentage: 67 },
-              { name: "Chocolate Lava Cake", views: 123, percentage: 53 },
-            ].map((item, index) => (
-              <div key={item.name} className="space-y-1">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{item.name}</span>
-                  <span className="text-muted-foreground">{item.views} views</span>
+            {analytics.topItems.length > 0 ? (
+              analytics.topItems.map((item, index) => (
+                <div key={item.name} className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{item.name}</span>
+                    <span className="text-muted-foreground">{item.views} views</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${item.percentage}%` }}
+                      transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
+                      className="h-full rounded-full bg-primary"
+                    />
+                  </div>
                 </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${item.percentage}%` }}
-                    transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
-                    className="h-full rounded-full bg-primary"
-                  />
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-4 text-muted-foreground">
+                No menu items data available
               </div>
-            ))}
+            )}
           </CardContent>
         </Card>
       </motion.div>
 
       {/* Device Breakdown */}
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
@@ -139,23 +214,23 @@ export function ShopkeeperAnalyticsPage() {
           <CardContent>
             <div className="flex items-center justify-around">
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary">78%</div>
+                <div className="text-3xl font-bold text-primary">{analytics.deviceBreakdown.mobile}%</div>
                 <p className="text-sm text-muted-foreground">Mobile</p>
               </div>
               <div className="h-16 w-px bg-border" />
               <div className="text-center">
-                <div className="text-3xl font-bold text-accent">18%</div>
+                <div className="text-3xl font-bold text-accent">{analytics.deviceBreakdown.tablet}%</div>
                 <p className="text-sm text-muted-foreground">Tablet</p>
               </div>
               <div className="h-16 w-px bg-border" />
               <div className="text-center">
-                <div className="text-3xl font-bold text-muted-foreground">4%</div>
+                <div className="text-3xl font-bold text-muted-foreground">{analytics.deviceBreakdown.desktop}%</div>
                 <p className="text-sm text-muted-foreground">Desktop</p>
               </div>
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </motion.div> */}
     </div>
   );
 }

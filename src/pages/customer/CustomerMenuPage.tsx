@@ -118,7 +118,7 @@ export function CustomerMenuPage() {
                 <h1 className="text-xl font-bold">{shop?.name || "Digital Menu Demo"}</h1>
                 <p className="text-muted-foreground text-sm">{shop?.description || "Delicious food, great experience"}</p>
                 <div className="flex items-center gap-4 mt-2">
-                  <span className="text-xs text-muted-foreground">⭐ 4.8 (120 reviews)</span>
+                  <span className="text-xs text-muted-foreground">⭐ {shop?.rating || "4.8"} ({shop?.reviewCount || "120"} reviews)</span>
                   <span className="text-xs text-muted-foreground">🕒 30-45 min</span>
                 </div>
               </div>

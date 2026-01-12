@@ -47,7 +47,7 @@ export function AboutShop({ shop, themeColor }: AboutShopProps) {
               style={{ color: `hsl(${themeColor})` }}
             />
           </div>
-          <p className="text-lg font-bold">4.8</p>
+          <p className="text-lg font-bold">{shop?.rating || "4.8"}</p>
           <p className="text-xs text-muted-foreground">Rating</p>
         </div>
         <div
