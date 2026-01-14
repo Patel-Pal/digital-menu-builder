@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useMenuTheme, menuThemes, MenuTheme } from "@/contexts/ThemeContext";
@@ -23,7 +24,8 @@ export function ShopSettingsPage() {
     address: "",
     phone: "",
     logo: "",
-    banner: ""
+    banner: "",
+    type: "restaurant"
   });
 
   // Edit profile states
@@ -63,7 +65,8 @@ export function ShopSettingsPage() {
           address: response.data.address || "",
           phone: response.data.phone || "",
           logo: response.data.logo || "",
-          banner: response.data.banner || ""
+          banner: response.data.banner || "",
+          type: response.data.type || "restaurant"
         });
         setLogoPreview(response.data.logo || "");
         setBannerPreview(response.data.banner || "");
@@ -146,7 +149,8 @@ export function ShopSettingsPage() {
         address: profileData.address,
         phone: profileData.phone,
         logo: logoUrl,
-        banner: bannerUrl
+        banner: bannerUrl,
+        type: profileData.type
       };
 
       await shopService.createOrUpdateShopProfile(data);
@@ -217,6 +221,9 @@ export function ShopSettingsPage() {
       );
       
       toast.success("Profile updated successfully!");
+      
+      // Trigger shop data refresh in sidebar
+      window.dispatchEvent(new CustomEvent('profileUpdated'));
       setShowEditProfile(false);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to update profile");
@@ -271,7 +278,7 @@ export function ShopSettingsPage() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg border">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-muted-foreground">Shop Owner</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">Shop Name</Label>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <User className="h-5 w-5 text-primary" />
@@ -323,7 +330,13 @@ export function ShopSettingsPage() {
           <span className="font-medium">{profileData.address || "Not set"}</span>
         </div>
       </div>
-    </div>
+      <div className="space-y-2">
+        <Label className="text-sm font-medium text-muted-foreground">Type</Label>
+        <div className="flex items-center gap-3">
+          <Store className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium capitalize">{profileData.type || "Restaurant"}</span>
+        </div>
+      </div>    </div>
 
     {/* DESCRIPTION */}
     <div className="space-y-2 rounded-lg border bg-background p-4">
@@ -600,7 +613,18 @@ export function ShopSettingsPage() {
               />
             </div>
 
-            {/* Logo Upload */}
+            <div>
+              <Label htmlFor="edit-type">Type</Label>
+              <Select value={profileData.type || "restaurant"} onValueChange={(value) => setProfileData({ ...profileData, type: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select shop type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="restaurant">Restaurant</SelectItem>
+                  <SelectItem value="cafe">Cafe</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>            {/* Logo Upload */}
             <div>
               <Label>Shop Logo</Label>
               <div className="space-y-4">

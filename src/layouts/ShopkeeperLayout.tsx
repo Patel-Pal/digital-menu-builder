@@ -39,6 +39,26 @@ export function ShopkeeperLayout() {
     }
   }, [user]);
 
+  // Listen for profile updates to refresh shop data
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      if (user) {
+        const fetchShop = async () => {
+          try {
+            const response = await shopService.getShopProfile();
+            setShop(response.data);
+          } catch (error) {
+            console.error("Failed to fetch shop:", error);
+          }
+        };
+        fetchShop();
+      }
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+  }, [user]);
+
   const handleLogout = () => {
     logout();
     navigate('/auth/login');
@@ -81,7 +101,7 @@ export function ShopkeeperLayout() {
               </div>
               <div>
                 <h1 className="font-semibold">{shop?.name || "Digital Menu"}</h1>
-                <p className="text-xs text-muted-foreground">Restaurant</p>
+                <p className="text-xs text-muted-foreground capitalize">{shop?.type || "Restaurant"}</p>
               </div>
             </div>
             <Button

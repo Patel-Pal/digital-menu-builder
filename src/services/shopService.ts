@@ -27,6 +27,7 @@ interface ShopProfileData {
   address?: string;
   phone?: string;
   menuTheme?: string;
+  type?: string;
 }
 
 export const shopService = {
