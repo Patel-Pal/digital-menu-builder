@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { OrderProvider } from "@/contexts/OrderContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 // Layouts
@@ -30,6 +31,7 @@ import { ShopkeeperDashboard } from "@/pages/shopkeeper/ShopkeeperDashboard";
 import { MenuManagementPage } from "@/pages/shopkeeper/MenuManagementPage";
 import { CategoryManagementPage } from "@/pages/shopkeeper/CategoryManagementPage";
 import { QRCodePage } from "@/pages/shopkeeper/QRCodePage";
+import { OrdersManagementPage } from "@/pages/shopkeeper/OrdersManagementPage";
 import { ShopkeeperAnalyticsPage } from "@/pages/shopkeeper/ShopkeeperAnalyticsPage";
 import { ShopkeeperBillingPage } from "@/pages/shopkeeper/ShopkeeperBillingPage";
 import { ShopSettingsPage } from "@/pages/shopkeeper/ShopSettingsPage";
@@ -47,7 +49,8 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <ThemeProvider>
+      <OrderProvider>
+        <ThemeProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
@@ -74,6 +77,7 @@ const App = () => (
                 <Route path="menu" element={<MenuManagementPage />} />
                 <Route path="categories" element={<CategoryManagementPage />} />
                 <Route path="qr" element={<QRCodePage />} />
+                <Route path="orders" element={<OrdersManagementPage />} />
                 <Route path="analytics" element={<ShopkeeperAnalyticsPage />} />
                 <Route path="billing" element={<ShopkeeperBillingPage />} />
                 <Route path="settings" element={<ShopSettingsPage />} />
@@ -91,6 +95,7 @@ const App = () => (
           </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>
+      </OrderProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

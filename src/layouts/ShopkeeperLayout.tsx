@@ -1,6 +1,6 @@
 import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { LayoutDashboard, UtensilsCrossed, FolderOpen, QrCode, BarChart3, Settings, Menu, X, LogOut } from "lucide-react";
+import { LayoutDashboard, UtensilsCrossed, FolderOpen, QrCode, BarChart3, Settings, Menu, X, LogOut, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +12,7 @@ const navItems: NavItem[] = [
   { title: "Home", href: "/shop", icon: LayoutDashboard },
   { title: "Menu", href: "/shop/menu", icon: UtensilsCrossed },
   { title: "Categories", href: "/shop/categories", icon: FolderOpen },
+  { title: "Orders", href: "/shop/orders", icon: ShoppingBag },
   { title: "QR Code", href: "/shop/qr", icon: QrCode },
   { title: "Analytics", href: "/shop/analytics", icon: BarChart3 },
   { title: "Settings", href: "/shop/settings", icon: Settings },
@@ -72,6 +73,8 @@ export function ShopkeeperLayout() {
         return "Menu Management";
       case "/shop/categories":
         return "Category Management";
+      case "/shop/orders":
+        return "Orders";
       case "/shop/qr":
         return "QR Code";
       case "/shop/analytics":

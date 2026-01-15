@@ -1,21 +1,25 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, Globe, ChevronDown, UtensilsCrossed, Info } from "lucide-react";
+import { Search, Globe, ChevronDown, UtensilsCrossed, Info, ShoppingCart, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ItemDetailModal } from "@/components/ItemDetailModal";
 import { AboutDigitalMenu } from "@/components/AboutDigitalMenu";
 import { AboutShop } from "@/components/AboutShop";
 import { CustomerRating } from "@/components/CustomerRating";
+import { OrderModal } from "@/components/OrderModal";
+import { OrderStatus } from "@/components/OrderStatus";
 import { menuItemService, type MenuItem } from "@/services/menuItemService";
 import { categoryService, type Category } from "@/services/categoryService";
 import { shopService, type Shop } from "@/services/shopService";
 import { useMenuTheme, menuThemes, MenuTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrder } from "@/contexts/OrderContext";
 
-type ViewTab = "menu" | "about" | "digital-menu";
+type ViewTab = "menu" | "orders" | "about" | "digital-menu";
 
 export function CustomerMenuPage() {
   const { shopId } = useParams<{ shopId: string }>();
@@ -28,10 +32,12 @@ export function CustomerMenuPage() {
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [activeTab, setActiveTab] = useState<ViewTab>("menu");
   const [loading, setLoading] = useState(true);
+  const [showOrderModal, setShowOrderModal] = useState(false);
   
   const { menuTheme, setMenuTheme } = useMenuTheme();
   const theme = menuThemes[menuTheme];
   const { user } = useAuth();
+  const { cart, addToCart, getTotalItems } = useOrder();
   
   // For demo, use current user's shopId or a default
   const currentShopId = shopId || user?.shopId || "";
@@ -95,16 +101,15 @@ export function CustomerMenuPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Mobile App Header - Fixed */}
+      {/* Mobile Header */}
       <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b">
-        {/* Shop Info - Compact Mobile Style */}
-        <div className="px-4 py-3">
+        <div className="px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-lg font-bold flex-shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-sm font-bold">
               🍽️
             </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-bold truncate">{shop?.name || "Digital Menu Demo"}</h1>
+            <div className="flex-1">
+              <h1 className="font-bold text-lg">{shop?.name || "Digital Menu"}</h1>
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span>⭐ {shop?.rating || "4.8"}</span>
                 <span>🕒 30-45 min</span>
@@ -114,29 +119,28 @@ export function CustomerMenuPage() {
         </div>
       </header>
 
-      {/* Content Area with Mobile App Spacing */}
-      <main className="pb-6">{activeTab === "menu" ? (
-        <div className="px-4 pt-4 space-y-4">
-          {/* Search - Mobile App Style */}
+      <main className="px-4 py-4">{activeTab === "menu" ? (
+        <div className="space-y-4">
+          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search menu items..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11 rounded-xl border-0 bg-muted/50"
+              className="pl-10 h-12 rounded-xl"
             />
           </div>
 
-          {/* Categories - Horizontal Scroll */}
+          {/* Categories */}
           {categories.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
               <button
                 onClick={() => setActiveCategory("all")}
                 className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${
                   activeCategory === "all"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-muted/50 text-muted-foreground"
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : "bg-card text-muted-foreground border border-border"
                 }`}
               >
                 All Items
@@ -147,8 +151,8 @@ export function CustomerMenuPage() {
                   onClick={() => setActiveCategory(category._id)}
                   className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${
                     activeCategory === category._id
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-muted/50 text-muted-foreground"
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "bg-card text-muted-foreground border border-border"
                   }`}
                 >
                   {category.icon} {category.name}
@@ -157,7 +161,7 @@ export function CustomerMenuPage() {
             </div>
           )}
 
-          {/* Menu Items - Mobile App Cards */}
+          {/* Menu Items */}
           <div className="space-y-3">
             {filteredItems.map((item) => (
               <motion.div
@@ -167,37 +171,54 @@ export function CustomerMenuPage() {
                 onClick={() => setSelectedItem(item)}
                 className="cursor-pointer"
               >
-                <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
-                  <CardContent className="p-4">
-                    <div className="flex gap-4">
-                      <div className="w-16 h-16 rounded-xl bg-muted/50 flex items-center justify-center overflow-hidden flex-shrink-0">
+                <Card className="border-0 shadow-sm bg-card rounded-xl overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="flex">
+                      <div className="mt-4 p-1 w-20 h-20 bg-muted flex items-center justify-center overflow-hidden rounded-lg flex-shrink-0">
                         {item.image ? (
-                          <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-xl" />
+                          <img 
+                            src={item.image} 
+                            alt={item.name} 
+                            className="w-full h-full object-cover block"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.parentElement.innerHTML = '<span class="text-2xl">🍽️</span>';
+                            }}
+                          />
                         ) : (
-                          <span className="text-xl">🍽️</span>
+                          <span className="text-2xl">🍽️</span>
                         )}
                       </div>
                       
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold truncate">{item.name}</h3>
-                            {item.description && (
-                              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                                {item.description}
-                              </p>
-                            )}
-                            
-                            <div className="flex items-center gap-2 mt-2">
-                              {item.popular && <Badge variant="outline" className="text-xs h-5">Popular</Badge>}
-                              {item.vegetarian && <Badge variant="outline" className="text-xs h-5 text-green-600">🌱</Badge>}
-                              {item.spicy && <Badge variant="outline" className="text-xs h-5 text-red-600">🌶️</Badge>}
-                            </div>
+                      <div className="flex-1 p-2">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-semibold leading-tight">{item.name}</h3>
+                          <span className="font-bold text-primary ml-2">${item.price.toFixed(2)}</span>
+                        </div>
+                        
+                        {item.description && (
+                          <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                            {item.description}
+                          </p>
+                        )}
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex gap-1">
+                            {item.popular && <Badge className="text-xs h-5 bg-orange-100 text-orange-600 border-orange-200">Popular</Badge>}
+                            {item.vegetarian && <Badge className="text-xs h-5 bg-green-100 text-green-600 border-green-200">🌱</Badge>}
+                            {item.spicy && <Badge className="text-xs h-5 bg-red-100 text-red-600 border-red-200">🌶️</Badge>}
                           </div>
                           
-                          <div className="text-right ml-2">
-                            <span className="font-bold text-lg">${item.price.toFixed(2)}</span>
-                          </div>
+                          <Button
+                            size="sm"
+                            className="h-8 w-8 p-0 rounded-full shadow-md"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addToCart(item);
+                            }}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -207,9 +228,9 @@ export function CustomerMenuPage() {
             ))}
             
             {filteredItems.length === 0 && (
-              <Card className="border-0 shadow-sm bg-card/50">
+              <Card className="border-0 shadow-sm bg-card rounded-xl">
                 <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                     <UtensilsCrossed className="h-8 w-8 text-muted-foreground" />
                   </div>
                   <h3 className="text-lg font-semibold mb-2">No items found</h3>
@@ -224,109 +245,69 @@ export function CustomerMenuPage() {
             )}
           </div>
         </div>
+      ) : activeTab === "orders" ? (
+        <div className="space-y-4">
+          <OrderStatus shopId={currentShopId} />
+        </div>
       ) : activeTab === "about" ? (
-        <div className="px-4 pt-4 space-y-4">
-          <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+        <div className="space-y-4">
+          <Card className="border-0 shadow-sm bg-card rounded-xl">
             <CardContent className="p-6">
               <AboutShop shop={shop} themeColor={theme.primary} />
             </CardContent>
           </Card>
-          <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+          <Card className="border-0 shadow-sm bg-card rounded-xl">
             <CardContent className="p-6">
               <CustomerRating />
             </CardContent>
           </Card>
         </div>
       ) : (
-        <div className="px-4 pt-4">
-          <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
-            <CardContent className="p-6">
-              <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-6">
-                  <h2 className="text-xl md:text-2xl font-bold mb-2">Transform Your Restaurant</h2>
-                  <p className="text-sm text-muted-foreground">Join thousands of restaurants using our digital menu platform</p>
+        <Card className="border-0 shadow-sm bg-card rounded-xl">
+          <CardContent className="p-6">
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold mb-2">Transform Your Restaurant</h2>
+              <p className="text-sm text-muted-foreground">Join thousands of restaurants using our digital menu platform</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-muted/50">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  📊
                 </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3 p-4 rounded-xl bg-background/50">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      📊
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-1 text-sm">Boost Revenue</h3>
-                      <p className="text-xs text-muted-foreground">Increase orders by 35% with instant menu access and real-time updates</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3 p-4 rounded-xl bg-background/50">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      💰
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-1 text-sm">Cut Costs</h3>
-                      <p className="text-xs text-muted-foreground">Save on printing costs and reduce staff workload with contactless ordering</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3 p-4 rounded-xl bg-background/50">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      📱
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-1 text-sm">QR Code Magic</h3>
-                      <p className="text-xs text-muted-foreground">Customers scan once and access your full menu instantly on any device</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3 p-4 rounded-xl bg-background/50">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      📈
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-1 text-sm">Smart Analytics</h3>
-                      <p className="text-xs text-muted-foreground">Track menu views, popular items, and customer behavior to optimize sales</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3 p-4 rounded-xl bg-background/50">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      🎨
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-1 text-sm">Brand Your Way</h3>
-                      <p className="text-xs text-muted-foreground">Customize themes, colors, and layout to match your restaurant's identity</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3 p-4 rounded-xl bg-background/50">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      ⚡
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-1 text-sm">Instant Updates</h3>
-                      <p className="text-xs text-muted-foreground">Change prices, add specials, or update availability in real-time</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-6 p-4 bg-primary/5 rounded-xl text-center">
-                  <h3 className="font-semibold mb-2 text-sm">Ready to Go Digital?</h3>
-                  <p className="text-xs text-muted-foreground mb-3">Start with our free plan and upgrade as you grow</p>
-                  <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-                    <span>✓ Free Plan Available</span>
-                    <span>✓ No Setup Fees</span>
-                    <span>✓ 24/7 Support</span>
-                  </div>
+                <div>
+                  <h3 className="font-semibold mb-1 text-sm">Boost Revenue</h3>
+                  <p className="text-xs text-muted-foreground">Increase orders by 35% with instant menu access</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-muted/50">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  💰
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1 text-sm">Cut Costs</h3>
+                  <p className="text-xs text-muted-foreground">Save on printing costs and reduce staff workload</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-muted/50">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  📱
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1 text-sm">QR Code Magic</h3>
+                  <p className="text-xs text-muted-foreground">Customers scan once and access your full menu instantly</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
       </main>
 
-      {/* Bottom Navigation - Mobile App Style */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-md border-t">
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-md border-t safe-area-pb">
         <div className="flex">
           <button
             onClick={() => setActiveTab("menu")}
@@ -338,6 +319,22 @@ export function CustomerMenuPage() {
           >
             <UtensilsCrossed className="h-5 w-5 mb-1" />
             <span className="text-xs font-medium">Menu</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("orders")}
+            className={`flex-1 flex flex-col items-center justify-center py-3 px-2 transition-all relative ${
+              activeTab === "orders"
+                ? "text-primary"
+                : "text-muted-foreground"
+            }`}
+          >
+            <ShoppingCart className="h-5 w-5 mb-1" />
+            <span className="text-xs font-medium">Orders</span>
+            {getTotalItems() > 0 && (
+              <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-red-500 text-white rounded-full flex items-center justify-center">
+                {getTotalItems()}
+              </Badge>
+            )}
           </button>
           <button
             onClick={() => setActiveTab("about")}
@@ -364,6 +361,26 @@ export function CustomerMenuPage() {
         </div>
       </div>
 
+      {/* Floating Order Button */}
+      {getTotalItems() > 0 && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="fixed bottom-20 right-4 z-40"
+        >
+          <Button
+            onClick={() => setShowOrderModal(true)}
+            className="h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90"
+            size="lg"
+          >
+            <div className="flex flex-col items-center">
+              <ShoppingCart className="h-5 w-5" />
+              <span className="text-xs font-bold">{getTotalItems()}</span>
+            </div>
+          </Button>
+        </motion.div>
+      )}
+
       {/* Item Detail Modal */}
       {selectedItem && (
         <ItemDetailModal
@@ -372,6 +389,13 @@ export function CustomerMenuPage() {
           onClose={() => setSelectedItem(null)}
         />
       )}
+
+      {/* Order Modal */}
+      <OrderModal
+        isOpen={showOrderModal}
+        onClose={() => setShowOrderModal(false)}
+        shopId={currentShopId}
+      />
     </div>
   );
 }

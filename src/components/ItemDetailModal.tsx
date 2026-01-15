@@ -3,6 +3,8 @@ import { X, Leaf, Flame, Plus, Minus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useOrder } from "@/contexts/OrderContext";
+import { toast } from "sonner";
 import type { MenuItem } from "@/types";
 
 interface ItemDetailModalProps {
@@ -14,8 +16,15 @@ interface ItemDetailModalProps {
 
 export function ItemDetailModal({ item, isOpen, onClose, themeColor }: ItemDetailModalProps) {
   const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useOrder();
 
   if (!item) return null;
+
+  const handleAddToCart = () => {
+    addToCart(item, quantity);
+    toast.success(`Added ${quantity}x ${item.name} to cart`);
+    onClose();
+  };
 
   const primaryColor = themeColor ? `hsl(${themeColor})` : "hsl(var(--primary))";
 
@@ -38,7 +47,7 @@ export function ItemDetailModal({ item, isOpen, onClose, themeColor }: ItemDetai
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed inset-x-0 bottom-0 z-50 max-h-[90vh] overflow-hidden rounded-t-3xl bg-card"
+            className="fixed inset-x-0 bottom-0 z-50 max-h-[90vh] rounded-t-3xl bg-card flex flex-col"
           >
             {/* Handle */}
             <div className="flex justify-center pt-3">
@@ -69,7 +78,7 @@ export function ItemDetailModal({ item, isOpen, onClose, themeColor }: ItemDetai
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-4 overflow-y-auto max-h-[50vh]">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {/* Title & Badges */}
               <div className="space-y-2">
                 <div className="flex items-start justify-between gap-4">
@@ -80,21 +89,21 @@ export function ItemDetailModal({ item, isOpen, onClose, themeColor }: ItemDetai
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {item.popular && (
-                    <Badge variant="warning">
-                      <Flame className="h-3 w-3" /> Popular
+                    <Badge variant="outline" className="text-orange-600 border-orange-200">
+                      <Flame className="h-3 w-3 mr-1" /> Popular
                     </Badge>
                   )}
                   {item.vegetarian && (
-                    <Badge variant="success">
-                      <Leaf className="h-3 w-3" /> Vegetarian
+                    <Badge variant="outline" className="text-green-600 border-green-200">
+                      <Leaf className="h-3 w-3 mr-1" /> Vegetarian
                     </Badge>
                   )}
                   {item.spicy && (
-                    <Badge variant="destructive">
-                      <Flame className="h-3 w-3" /> Spicy
+                    <Badge variant="outline" className="text-red-600 border-red-200">
+                      <Flame className="h-3 w-3 mr-1" /> Spicy
                     </Badge>
                   )}
-                  {!item.available && (
+                  {!item.isActive && (
                     <Badge variant="secondary">Currently Unavailable</Badge>
                   )}
                 </div>
@@ -122,14 +131,15 @@ export function ItemDetailModal({ item, isOpen, onClose, themeColor }: ItemDetai
                 </div>
               )}
 
-              {/* Quantity Selector (for demo) */}
-              {item.available && (
+              {/* Quantity Selector */}
+              {item.isActive && (
                 <div className="flex items-center justify-between rounded-xl bg-muted p-4">
                   <span className="font-medium">Quantity</span>
                   <div className="flex items-center gap-4">
                     <Button
                       variant="outline"
-                      size="icon-sm"
+                      size="sm"
+                      className="h-8 w-8 p-0"
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     >
                       <Minus className="h-4 w-4" />
@@ -137,7 +147,8 @@ export function ItemDetailModal({ item, isOpen, onClose, themeColor }: ItemDetai
                     <span className="w-8 text-center font-bold">{quantity}</span>
                     <Button
                       variant="outline"
-                      size="icon-sm"
+                      size="sm"
+                      className="h-8 w-8 p-0"
                       onClick={() => setQuantity(quantity + 1)}
                     >
                       <Plus className="h-4 w-4" />
@@ -148,20 +159,14 @@ export function ItemDetailModal({ item, isOpen, onClose, themeColor }: ItemDetai
             </div>
 
             {/* Footer */}
-            <div className="border-t border-border p-4 safe-bottom">
+            <div className="flex-shrink-0 border-t border-border p-4">
               <Button
-                className="w-full"
-                size="xl"
-                style={{ 
-                  background: themeColor 
-                    ? `linear-gradient(135deg, hsl(${themeColor}), hsl(${themeColor} / 0.8))` 
-                    : undefined 
-                }}
-                variant={themeColor ? undefined : "gradient"}
-                disabled={!item.available}
+                className="w-full h-12"
+                disabled={!item.isActive}
+                onClick={handleAddToCart}
               >
-                {item.available
-                  ? `Add to Order • $${(item.price * quantity).toFixed(2)}`
+                {item.isActive
+                  ? `Add to Cart • $${(item.price * quantity).toFixed(2)}`
                   : "Currently Unavailable"}
               </Button>
             </div>
