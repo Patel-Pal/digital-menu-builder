@@ -42,6 +42,24 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    const storedCart = localStorage.getItem('cart');
+    if (storedCart) {
+      try {
+        setCart(JSON.parse(storedCart));
+      } catch (error) {
+        console.error('Failed to parse stored cart:', error);
+        localStorage.removeItem('cart');
+      }
+    }
+  }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
+
   // Save customer name to localStorage
   const handleSetCustomerName = (name: string) => {
     setCustomerName(name);
@@ -85,6 +103,7 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = () => {
     setCart([]);
+    localStorage.removeItem('cart');
   };
 
   const getTotalAmount = () => {

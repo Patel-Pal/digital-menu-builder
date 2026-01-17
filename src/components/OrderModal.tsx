@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
 import { Minus, Plus, X } from 'lucide-react';
 import { useOrder } from '@/contexts/OrderContext';
 import { orderService } from '@/services/orderService';
@@ -70,119 +69,130 @@ export function OrderModal({ isOpen, onClose, shopId }: OrderModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Place Your Order</DialogTitle>
+      <DialogContent className="w-[95vw] max-w-md h-[95vh] max-h-[650px] p-0 gap-0 bg-slate-900 border-slate-700 shadow-2xl">
+        <DialogHeader className="px-4 py-3 border-b border-slate-700/50 bg-gradient-to-r from-slate-800 to-slate-900">
+          <DialogTitle className="text-lg font-semibold text-white">Place Your Order</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
           {/* Customer Details */}
-          <div className="space-y-3">
-            <div>
-              <Label htmlFor="customerName">Your Name</Label>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="customerName" className="text-sm font-medium text-slate-300">Your Name</Label>
               <Input
                 id="customerName"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Enter your name"
-                className="mt-1"
+                className="h-11 text-base bg-slate-800 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl shadow-sm"
               />
             </div>
 
-            <div>
-              <Label htmlFor="tableNumber">Table Number</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="tableNumber" className="text-sm font-medium text-slate-300">Table Number</Label>
               <Input
                 id="tableNumber"
                 value={tableNumber}
                 onChange={(e) => setTableNumber(e.target.value)}
                 placeholder="Enter table number"
-                className="mt-1"
+                className="h-11 text-base bg-slate-800 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl shadow-sm"
               />
             </div>
 
-            <div>
-              <Label htmlFor="orderNotes">Special Instructions (Optional)</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="orderNotes" className="text-sm font-medium text-slate-300">Special Instructions</Label>
               <Textarea
                 id="orderNotes"
                 value={orderNotes}
                 onChange={(e) => setOrderNotes(e.target.value)}
-                placeholder="Any special requests or notes..."
-                className="mt-1 resize-none"
-                rows={3}
+                placeholder="Any special requests..."
+                className="resize-none text-base min-h-[70px] bg-slate-800 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl shadow-sm"
+                rows={2}
               />
             </div>
           </div>
 
           {/* Order Items */}
-          <div className="space-y-3">
-            <h3 className="font-semibold">Order Summary</h3>
-            {cart.map((item) => (
-              <Card key={item.menuItem._id} className="border-0 bg-muted/30">
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-muted/50 flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold text-white">Order Summary</h3>
+              <span className="text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded-full">{cart.length} items</span>
+            </div>
+            <div className="space-y-3">
+              {cart.map((item) => (
+                <div key={item.menuItem._id} className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-3 border border-slate-700/30 shadow-lg">
+                  <div className="flex items-start gap-3">
+                    <div className="w-14 h-14 rounded-lg bg-slate-700/50 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-inner">
                       {item.menuItem.image ? (
                         <img src={item.menuItem.image} alt={item.menuItem.name} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-lg">🍽️</span>
+                        <span className="text-xl">🍽️</span>
                       )}
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm truncate">{item.menuItem.name}</h4>
-                      <p className="text-sm text-muted-foreground">${item.menuItem.price.toFixed(2)} each</p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => updateQuantity(item.menuItem._id, item.quantity - 1)}
-                      >
-                        <Minus className="h-3 w-3" />
-                      </Button>
-                      <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => updateQuantity(item.menuItem._id, item.quantity + 1)}
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                        onClick={() => removeFromCart(item.menuItem._id)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
+                      <h4 className="font-semibold text-white text-sm leading-tight mb-1">{item.menuItem.name}</h4>
+                      <p className="text-xs text-slate-400 mb-3">${item.menuItem.price.toFixed(2)} each</p>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 bg-slate-700/50 rounded-full p-0.5">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 rounded-full hover:bg-slate-600 text-white"
+                            onClick={() => updateQuantity(item.menuItem._id, item.quantity - 1)}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span className="w-6 text-center font-semibold text-white text-sm">{item.quantity}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 rounded-full hover:bg-slate-600 text-white"
+                            onClick={() => updateQuantity(item.menuItem._id, item.quantity + 1)}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-full"
+                          onClick={() => removeFromCart(item.menuItem._id)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Total */}
-          <div className="border-t pt-3">
-            <div className="flex justify-between items-center text-lg font-semibold">
-              <span>Total:</span>
-              <span>${getTotalAmount().toFixed(2)}</span>
+                </div>
+              ))}
             </div>
+          </div>
+        </div>
+
+        {/* Fixed Bottom Section */}
+        <div className="border-t border-slate-700/50 bg-gradient-to-r from-slate-800 to-slate-900 px-4 py-3 space-y-3">
+          {/* Total */}
+          <div className="flex justify-between items-center bg-slate-800/50 rounded-xl p-3 border border-slate-700/30">
+            <span className="text-base font-medium text-slate-300">Total</span>
+            <span className="text-xl font-bold text-white">${getTotalAmount().toFixed(2)}</span>
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2 pt-2">
-            <Button variant="outline" onClick={onClose} className="flex-1">
+          <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              onClick={onClose} 
+              className="flex-1 h-11 text-base border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white rounded-xl font-medium"
+            >
               Cancel
             </Button>
             <Button 
               onClick={handleSubmitOrder} 
               disabled={isSubmitting || cart.length === 0}
-              className="flex-1"
+              className="flex-1 h-11 text-base bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Placing Order...' : 'Confirm Order'}
             </Button>

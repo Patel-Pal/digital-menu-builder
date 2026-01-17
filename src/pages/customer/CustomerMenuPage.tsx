@@ -18,6 +18,7 @@ import { shopService, type Shop } from "@/services/shopService";
 import { useMenuTheme, menuThemes, MenuTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrder } from "@/contexts/OrderContext";
+import { toast } from "sonner";
 
 type ViewTab = "menu" | "orders" | "about" | "digital-menu";
 
@@ -73,7 +74,7 @@ export function CustomerMenuPage() {
       
       // Set first category as active if available
       if (categoryResponse.data && categoryResponse.data.length > 0) {
-        setActiveCategory(categoryResponse.data[0]._id);
+
       }
     } catch (error) {
       console.error("Failed to fetch menu data:", error);
@@ -215,6 +216,7 @@ export function CustomerMenuPage() {
                             onClick={(e) => {
                               e.stopPropagation();
                               addToCart(item);
+                              toast.success(`${item.name} added to cart!`);
                             }}
                           >
                             <Plus className="h-4 w-4" />
@@ -328,13 +330,15 @@ export function CustomerMenuPage() {
                 : "text-muted-foreground"
             }`}
           >
-            <ShoppingCart className="h-5 w-5 mb-1" />
+            <div className="relative">
+              <ShoppingCart className="h-5 w-5 mb-1" />
+              {getTotalItems() > 0 && (
+                <span className="absolute -top-2 -right-2 h-4 w-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center min-w-[16px] border border-background">
+                  {getTotalItems() > 99 ? '99+' : getTotalItems()}
+                </span>
+              )}
+            </div>
             <span className="text-xs font-medium">Orders</span>
-            {getTotalItems() > 0 && (
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-red-500 text-white rounded-full flex items-center justify-center">
-                {getTotalItems()}
-              </Badge>
-            )}
           </button>
           <button
             onClick={() => setActiveTab("about")}
@@ -370,13 +374,13 @@ export function CustomerMenuPage() {
         >
           <Button
             onClick={() => setShowOrderModal(true)}
-            className="h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90"
+            className="h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90 relative"
             size="lg"
           >
-            <div className="flex flex-col items-center">
-              <ShoppingCart className="h-5 w-5" />
-              <span className="text-xs font-bold">{getTotalItems()}</span>
-            </div>
+            <ShoppingCart className="h-6 w-6" />
+            <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center min-w-[20px] border-2 border-background">
+              {getTotalItems() > 99 ? '99+' : getTotalItems()}
+            </span>
           </Button>
         </motion.div>
       )}
